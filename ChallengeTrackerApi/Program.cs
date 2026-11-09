@@ -1,11 +1,49 @@
+using System.Text.Json.Serialization;
+using ChallengeTrackerApi.Endpoints;
+using ChallengeTrackerApi.Errors;
+using ChallengeTrackerApi.Extensions;
+using ChallengeTrackerApi.Infrastructure;
+using ChallengeTrackerApi.Services.Interfaces;
+using ChallengeTrackerApi.Services.EF;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 // DOC's AND VALIDATION
 builder.Services.AddOpenApi();
+builder.Services.AddValidation();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+// STRING <=> ENUM CONVERTER
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(
+        new JsonStringEnumConverter(allowIntegerValues: false));
+});
 
 
+// IDENTITY + JWT
+builder.Services.AddIdentityServices();
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddAuthorization();
+
+
+//Application services
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+
+//Create the app
 var app = builder.Build();
+
+
+//Middleware configuration (if any) can go here
+app.UseExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
+
+
+app.MapAuthEndpoints();
 
 // MAP ENDPOINTS - Routes for the API (Development only)
 if (app.Environment.IsDevelopment())
