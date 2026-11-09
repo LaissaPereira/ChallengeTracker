@@ -1,5 +1,5 @@
 using System.Text;
-using ChallengeTrackerApi.Infrastructure;
+using ChallengeTrackerApi.Data;
 using ChallengeTrackerApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;

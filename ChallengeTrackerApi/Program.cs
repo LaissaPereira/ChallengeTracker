@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
+using ChallengeTrackerApi.Data;
 using ChallengeTrackerApi.Endpoints;
 using ChallengeTrackerApi.Errors;
 using ChallengeTrackerApi.Extensions;
-using ChallengeTrackerApi.Infrastructure;
 using ChallengeTrackerApi.Services.Interfaces;
 using ChallengeTrackerApi.Services.EF;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +22,12 @@ builder.Services.ConfigureHttpJsonOptions(options =>
         new JsonStringEnumConverter(allowIntegerValues: false));
 });
 
+// DATABASE
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Missing default connection string");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlite(connectionString));
 
 // IDENTITY + JWT
 builder.Services.AddIdentityServices();
