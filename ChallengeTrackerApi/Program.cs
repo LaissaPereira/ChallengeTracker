@@ -34,6 +34,7 @@ builder.Services.AddIdentityServices();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddAuthorization();
 
+builder.Services.AddApiRateLimiting(builder.Configuration);
 
 //Application services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -48,6 +49,8 @@ app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
+
 
 
 app.MapAuthEndpoints();
