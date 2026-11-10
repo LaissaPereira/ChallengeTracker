@@ -15,14 +15,26 @@ public class AuthApiFactory : WebApplicationFactory<Program>
 
     private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"challenge-tests-{Guid.NewGuid():N}.db");
     private readonly string _jwtKey;
+    private readonly Dictionary<string, string> _settings = new()
+    {
+        // High defaults so tests that call login/register repeatedly are never throttled.
+        ["RateLimiting:Login:PermitLimit"] = "10000",
+        ["RateLimiting:Register:PermitLimit"] = "10000",
+        ["RateLimiting:PerUser:PermitLimit"] = "10000"
+    };
 
     public AuthApiFactory() : this(ValidJwtKey)
     {
     }
 
-    internal AuthApiFactory(string jwtKey)
+    internal AuthApiFactory(string jwtKey, IReadOnlyDictionary<string, string>? settings = null)
     {
         _jwtKey = jwtKey;
+
+        foreach (var (key, value) in settings ?? new Dictionary<string, string>())
+        {
+            _settings[key] = value;
+        }
     }
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -30,6 +42,11 @@ public class AuthApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:DefaultConnection", $"Data Source={_databasePath}");
         builder.UseSetting("Jwt:Key", _jwtKey);
+
+        foreach (var (key, value) in _settings)
+        {
+            builder.UseSetting(key, value);
+        }
     }
 
     protected override IHost CreateHost(IHostBuilder builder)

@@ -31,6 +31,7 @@ public static class AuthEndpoints
 
             return Results.ValidationProblem(errors);
         }).WithSummary("Register a new user")
+        .RequireRateLimiting(RateLimitPolicies.Register)
         .WithDescription("Register a new user with display name, email, and password");
 
         //Post endpoint for login user
@@ -39,6 +40,7 @@ public static class AuthEndpoints
             var loginResponse = await authService.LoginAsync(loginRequestDto);
             return loginResponse is null ? Results.Unauthorized() : Results.Ok(loginResponse);
         }).WithSummary("Login a user")
+        .RequireRateLimiting(RateLimitPolicies.Login)
         .WithDescription("Login a user with email and password");
 
         // Get/me endpoint for current user
@@ -50,6 +52,7 @@ public static class AuthEndpoints
                 ? Results.NotFound()
                 : Results.Ok(new UserResponseDto(currentUser.Id, currentUser.DisplayName, currentUser.Email!));
         }).RequireAuthorization()
+        .RequireRateLimiting(RateLimitPolicies.PerUser)
         .WithSummary("Get current user")
         .WithDescription("Get the currently authenticated user's information");
 
