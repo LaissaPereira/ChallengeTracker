@@ -17,6 +17,109 @@ namespace ChallengeTrackerApi.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.14");
 
+            modelBuilder.Entity("ChallengeTrackerApi.Models.Challenge", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("EndDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OwnerId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Visibility")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Challenges");
+                });
+
+            modelBuilder.Entity("ChallengeTrackerApi.Models.Membership", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ChallengeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("JoinedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChallengeId");
+
+                    b.HasIndex("UserId", "ChallengeId")
+                        .IsUnique();
+
+                    b.ToTable("Memberships");
+                });
+
+            modelBuilder.Entity("ChallengeTrackerApi.Models.ProgressEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ChallengeId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("LoggedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateOnly>("LoggedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChallengeId");
+
+                    b.HasIndex("UserId", "ChallengeId", "LoggedDate")
+                        .IsUnique();
+
+                    b.ToTable("ProgressEntries");
+                });
+
             modelBuilder.Entity("ChallengeTrackerApi.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -213,6 +316,55 @@ namespace ChallengeTrackerApi.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ChallengeTrackerApi.Models.Challenge", b =>
+                {
+                    b.HasOne("ChallengeTrackerApi.Models.User", "Owner")
+                        .WithMany("OwnedChallenges")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("ChallengeTrackerApi.Models.Membership", b =>
+                {
+                    b.HasOne("ChallengeTrackerApi.Models.Challenge", "Challenge")
+                        .WithMany("Memberships")
+                        .HasForeignKey("ChallengeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ChallengeTrackerApi.Models.User", "User")
+                        .WithMany("Memberships")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Challenge");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ChallengeTrackerApi.Models.ProgressEntry", b =>
+                {
+                    b.HasOne("ChallengeTrackerApi.Models.Challenge", "Challenge")
+                        .WithMany("ProgressEntries")
+                        .HasForeignKey("ChallengeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ChallengeTrackerApi.Models.User", "User")
+                        .WithMany("ProgressEntries")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Challenge");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -262,6 +414,22 @@ namespace ChallengeTrackerApi.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ChallengeTrackerApi.Models.Challenge", b =>
+                {
+                    b.Navigation("Memberships");
+
+                    b.Navigation("ProgressEntries");
+                });
+
+            modelBuilder.Entity("ChallengeTrackerApi.Models.User", b =>
+                {
+                    b.Navigation("Memberships");
+
+                    b.Navigation("OwnedChallenges");
+
+                    b.Navigation("ProgressEntries");
                 });
 #pragma warning restore 612, 618
         }
