@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ChallengeTrackerApi.Models;
 
-public class User: IdentityUser<Guid>
+public class User : IdentityUser<Guid>
 {
-    public string Name { get; set; } = string.Empty;
+    public const int DisplayNameMaxLength = 50;
+
+    public string DisplayName { get; set; } = string.Empty;
 
     // TODO: add navigation properties once these models exist.
     // User 1-* Membership *-1 Challenge; User 1-* ProgressEntry; Challenge 1-* ProgressEntry

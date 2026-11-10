@@ -20,7 +20,7 @@ public static class AuthEndpoints
             var (result, user) = await authService.RegisterAsync(registerRequestDto);
             if (result.Succeeded)
             {
-                return Results.Created("/auth", user);
+                return Results.Created("/auth/me", user);
             }
 
             var errors = result.Errors
@@ -31,7 +31,7 @@ public static class AuthEndpoints
 
             return Results.ValidationProblem(errors);
         }).WithSummary("Register a new user")
-        .WithDescription("Register a new user with name, email, and password");
+        .WithDescription("Register a new user with display name, email, and password");
 
         //Post endpoint for login user
         group.MapPost("/login", async (LoginRequestDto loginRequestDto, IAuthService authService) =>
@@ -48,7 +48,7 @@ public static class AuthEndpoints
 
             return currentUser is null
                 ? Results.NotFound()
-                : Results.Ok(new UserResponseDto(currentUser.Id, currentUser.Name, currentUser.Email!));
+                : Results.Ok(new UserResponseDto(currentUser.Id, currentUser.DisplayName, currentUser.Email!));
         }).RequireAuthorization()
         .WithSummary("Get current user")
         .WithDescription("Get the currently authenticated user's information");

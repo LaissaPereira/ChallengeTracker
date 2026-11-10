@@ -14,7 +14,7 @@ public class AuthService : IAuthService
     private readonly UserManager<User> _userManager;
     private readonly IConfiguration _configuration;
 
-    public AuthService (UserManager<User> userManager, IConfiguration configuration)
+    public AuthService(UserManager<User> userManager, IConfiguration configuration)
     {
         _userManager = userManager;
         _configuration = configuration;
@@ -24,15 +24,15 @@ public class AuthService : IAuthService
     {
         var user = new User
         {
-            Name = registerRequestDto.Name,
+            DisplayName = registerRequestDto.DisplayName.Trim(),
             UserName = registerRequestDto.Email,
             Email = registerRequestDto.Email
         };
-        
+
         var result = await _userManager.CreateAsync(user, registerRequestDto.Password);
         if (!result.Succeeded) return (result, null);
 
-        return (result, new UserResponseDto(user.Id, user.Name, user.Email!));
+        return (result, new UserResponseDto(user.Id, user.DisplayName, user.Email!));
 
     }
 
@@ -58,7 +58,7 @@ public class AuthService : IAuthService
             Audience = _configuration["Jwt:Audience"],
             Expires = expiresAt.UtcDateTime,
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)), SecurityAlgorithms.HmacSha256)
-    });
+        });
 
         return new LoginResponseDto(tokenHandler, expiresAt);
     }
