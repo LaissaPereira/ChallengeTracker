@@ -45,6 +45,7 @@ var app = builder.Build();
 
 //Middleware configuration (if any) can go here
 app.UseExceptionHandler();
+app.UseStatusCodePages();
 app.UseAuthentication();
 app.UseAuthorization();
 

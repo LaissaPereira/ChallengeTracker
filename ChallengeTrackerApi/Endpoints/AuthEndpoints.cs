@@ -10,7 +10,7 @@ namespace ChallengeTrackerApi.Endpoints;
 
 public static class AuthEndpoints
 {
-    public static void MapAuthEndpoints( this IEndpointRouteBuilder app)
+    public static void MapAuthEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/auth").WithTags("Auth");
 
@@ -18,15 +18,28 @@ public static class AuthEndpoints
         group.MapPost("/register", async (RegisterRequestDto registerRequestDto, IAuthService authService) =>
         {
             var (result, user) = await authService.RegisterAsync(registerRequestDto);
-            return result.Succeeded ? Results.Created("/auth/me", user) : Results.BadRequest(result.Errors);
-        });
+            if (result.Succeeded)
+            {
+                return Results.Created("/auth", user);
+            }
+
+            var errors = result.Errors
+                .GroupBy(error => error.Code)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Select(error => error.Description).ToArray());
+
+            return Results.ValidationProblem(errors);
+        }).WithSummary("Register a new user")
+        .WithDescription("Register a new user with name, email, and password");
 
         //Post endpoint for login user
         group.MapPost("/login", async (LoginRequestDto loginRequestDto, IAuthService authService) =>
         {
             var loginResponse = await authService.LoginAsync(loginRequestDto);
             return loginResponse is null ? Results.Unauthorized() : Results.Ok(loginResponse);
-        });
+        }).WithSummary("Login a user")
+        .WithDescription("Login a user with email and password");
 
         // Get/me endpoint for current user
         group.MapGet("/me", async (ClaimsPrincipal user, UserManager<User> users) =>
@@ -36,7 +49,9 @@ public static class AuthEndpoints
             return currentUser is null
                 ? Results.NotFound()
                 : Results.Ok(new UserResponseDto(currentUser.Id, currentUser.Name, currentUser.Email!));
-        })
-        .RequireAuthorization();
+        }).RequireAuthorization()
+        .WithSummary("Get current user")
+        .WithDescription("Get the currently authenticated user's information");
+
     }
 }

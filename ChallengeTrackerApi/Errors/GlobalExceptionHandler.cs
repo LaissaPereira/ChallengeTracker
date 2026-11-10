@@ -13,9 +13,16 @@ public class GlobalExceptionHandler : IExceptionHandler
 
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
     {
-        var status = exception is BadHttpRequestException badRequest ? badRequest.StatusCode : StatusCodes.Status500InternalServerError;
+        var (status, title) = exception switch
+        {
+            BadRequestException => (StatusCodes.Status400BadRequest, "Bad request"),
+            NotFoundException => (StatusCodes.Status404NotFound, "Not found"),
+            ConflictException => (StatusCodes.Status409Conflict, "Conflict"),
+            BadHttpRequestException badRequest => (badRequest.StatusCode, "Bad request"),
+            _ => (StatusCodes.Status500InternalServerError, "Server error")
+        };
 
-        if(status == 500)
+        if (status == StatusCodes.Status500InternalServerError)
         {
             _logger.LogError(exception, "An unhandled exception occurred.");
         }
@@ -24,8 +31,8 @@ public class GlobalExceptionHandler : IExceptionHandler
 
         await Results.Problem(
             statusCode: status,
-            title: status == 500 ? "Server error" : "Bad request",
-            detail: exception.Message
+            title: title,
+            detail: status == StatusCodes.Status500InternalServerError ? null : exception.Message
         ).ExecuteAsync(context);
 
         return true;
