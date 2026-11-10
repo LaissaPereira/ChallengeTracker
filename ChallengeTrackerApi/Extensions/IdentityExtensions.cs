@@ -11,9 +11,9 @@ namespace ChallengeTrackerApi.Extensions;
 
 public static class IdentityExtensions
 {
-    public static IServiceCollection AddIdentityServices( this IServiceCollection services)
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services)
     {
-        services.AddIdentityCore<User>(options => { options.User.RequireUniqueEmail = true;})
+        services.AddIdentityCore<User>(options => { options.User.RequireUniqueEmail = true; })
         .AddRoles<IdentityRole<Guid>>()
         .AddEntityFrameworkStores<ApplicationDbContext>();
 
@@ -22,27 +22,32 @@ public static class IdentityExtensions
 
     public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-       
-       services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-               .AddJwtBearer(options =>
-               {
-                   options.MapInboundClaims = false;
 
-                   var key = configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing");
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.MapInboundClaims = false;
 
-                   options.TokenValidationParameters = new TokenValidationParameters
-                   {
-                       ValidateIssuerSigningKey = true,
-                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-                       ValidateIssuer = true,
-                       ValidIssuer = configuration["Jwt:Issuer"],
-                       ValidateAudience = true,
-                       ValidAudience = configuration["Jwt:Audience"],
-                       ValidateLifetime = true,
-                       ClockSkew = TimeSpan.Zero
-                   };
-               });
+                    var key = configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is missing");
 
-       return services;
+                    if (Encoding.UTF8.GetByteCount(key) < 32)
+                    {
+                        throw new InvalidOperationException("Jwt:Key must be at least 32 bytes.");
+                    }
+
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                        ValidateIssuer = true,
+                        ValidIssuer = configuration["Jwt:Issuer"],
+                        ValidateAudience = true,
+                        ValidAudience = configuration["Jwt:Audience"],
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
+
+        return services;
     }
 }

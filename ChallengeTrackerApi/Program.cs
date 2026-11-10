@@ -45,6 +45,7 @@ var app = builder.Build();
 
 //Middleware configuration (if any) can go here
 app.UseExceptionHandler();
+app.UseStatusCodePages();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -58,8 +59,8 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 
     // DOC's
-    app.Logger.LogInformation("OpenAPI JSON: http://localhost:5262/openapi/v1.json");
-    app.Logger.LogInformation("Scalar UI: http://localhost:5262/scalar/v1");
+    app.Logger.LogInformation("OpenAPI JSON: http://localhost:5040/openapi/v1.json");
+    app.Logger.LogInformation("Scalar UI: http://localhost:5040/scalar/v1");
 }
 
 
