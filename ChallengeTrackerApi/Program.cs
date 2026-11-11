@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using ChallengeTrackerApi.Data;
 using ChallengeTrackerApi.Endpoints;
@@ -19,7 +20,7 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(
-        new JsonStringEnumConverter(allowIntegerValues: false));
+        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, allowIntegerValues: false));
 });
 
 // DATABASE
@@ -38,6 +39,7 @@ builder.Services.AddApiRateLimiting(builder.Configuration);
 
 //Application services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IChallengeService, ChallengeService>();
 builder.Services.AddScoped<DbSeeder>();
 
 
@@ -55,6 +57,7 @@ app.UseRateLimiter();
 
 
 app.MapAuthEndpoints();
+app.MapChallengeEndpoints();
 
 // MAP ENDPOINTS - Routes for the API (Development only)
 if (app.Environment.IsDevelopment())

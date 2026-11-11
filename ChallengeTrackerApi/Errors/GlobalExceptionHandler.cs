@@ -16,6 +16,7 @@ public class GlobalExceptionHandler : IExceptionHandler
         var (status, title) = exception switch
         {
             BadRequestException => (StatusCodes.Status400BadRequest, "Bad request"),
+            ForbiddenException => (StatusCodes.Status403Forbidden, "Forbidden"),
             NotFoundException => (StatusCodes.Status404NotFound, "Not found"),
             ConflictException => (StatusCodes.Status409Conflict, "Conflict"),
             BadHttpRequestException badRequest => (badRequest.StatusCode, "Bad request"),
