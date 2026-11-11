@@ -42,6 +42,25 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IChallengeService, ChallengeService>();
 builder.Services.AddScoped<DbSeeder>();
 
+const string frontendCorsPolicy = "Frontend";
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>();
+if(allowedOrigins is null || allowedOrigins.Length == 0)
+{
+    throw new InvalidOperationException("Cors: AllowedOrigins must be configured.");
+}
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(frontendCorsPolicy, policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
+
+
 
 //Create the app
 var app = builder.Build();
@@ -50,6 +69,7 @@ var app = builder.Build();
 //Middleware configuration (if any) can go here
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+app.UseCors(frontendCorsPolicy);
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
