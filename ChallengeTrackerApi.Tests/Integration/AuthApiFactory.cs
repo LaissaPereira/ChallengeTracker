@@ -17,6 +17,7 @@ public class AuthApiFactory : WebApplicationFactory<Program>
     private readonly string _jwtKey;
     private readonly Dictionary<string, string> _settings = new()
     {
+        ["SeedData:Password"] = "Development-seed-password-123!",
         // High defaults so tests that call login/register repeatedly are never throttled.
         ["RateLimiting:Login:PermitLimit"] = "10000",
         ["RateLimiting:Register:PermitLimit"] = "10000",

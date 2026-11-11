@@ -38,6 +38,7 @@ builder.Services.AddApiRateLimiting(builder.Configuration);
 
 //Application services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<DbSeeder>();
 
 
 //Create the app
@@ -58,6 +59,14 @@ app.MapAuthEndpoints();
 // MAP ENDPOINTS - Routes for the API (Development only)
 if (app.Environment.IsDevelopment())
 {
+    await using var scope = app.Services.CreateAsyncScope();
+
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
+    await seeder.SeedAsync();
+
     app.MapOpenApi();
     app.MapScalarApiReference();
 
