@@ -43,6 +43,7 @@ public class AuthApiFactory : WebApplicationFactory<Program>
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:DefaultConnection", $"Data Source={_databasePath}");
         builder.UseSetting("Jwt:Key", _jwtKey);
+        builder.UseSetting("Cors:AllowedOrigins:0", "http://localhost:5173");
 
         foreach (var (key, value) in _settings)
         {

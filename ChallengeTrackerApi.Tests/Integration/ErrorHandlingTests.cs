@@ -17,6 +17,7 @@ public class ErrorHandlingTests
             {
                 builder.UseEnvironment("Testing");
                 builder.UseSetting("Jwt:Key", new string('x', 64));
+                builder.UseSetting("Cors:AllowedOrigins:0", "http://localhost:5173");
             });
         using var client = factory.CreateClient();
 
