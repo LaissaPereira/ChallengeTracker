@@ -40,13 +40,15 @@ builder.Services.AddApiRateLimiting(builder.Configuration);
 //Application services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IChallengeService, ChallengeService>();
+builder.Services.AddScoped<IMembershipService, MembershipService>();
+builder.Services.AddScoped<IProgressEntryService, ProgressEntryService>();
 builder.Services.AddScoped<DbSeeder>();
 
 const string frontendCorsPolicy = "Frontend";
 var allowedOrigins = builder.Configuration
     .GetSection("Cors:AllowedOrigins")
     .Get<string[]>();
-if(allowedOrigins is null || allowedOrigins.Length == 0)
+if (allowedOrigins is null || allowedOrigins.Length == 0)
 {
     throw new InvalidOperationException("Cors: AllowedOrigins must be configured.");
 }
@@ -78,6 +80,8 @@ app.UseRateLimiter();
 
 app.MapAuthEndpoints();
 app.MapChallengeEndpoints();
+app.MapMembershipEndpoints();
+app.MapProgressEntryEndpoints();
 
 // MAP ENDPOINTS - Routes for the API (Development only)
 if (app.Environment.IsDevelopment())
