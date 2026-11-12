@@ -42,6 +42,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IChallengeService, ChallengeService>();
 builder.Services.AddScoped<IMembershipService, MembershipService>();
 builder.Services.AddScoped<IProgressEntryService, ProgressEntryService>();
+builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<DbSeeder>();
 
 const string frontendCorsPolicy = "Frontend";
@@ -82,6 +83,7 @@ app.MapAuthEndpoints();
 app.MapChallengeEndpoints();
 app.MapMembershipEndpoints();
 app.MapProgressEntryEndpoints();
+app.MapLeaderboardEndpoints();
 
 // MAP ENDPOINTS - Routes for the API (Development only)
 if (app.Environment.IsDevelopment())
