@@ -41,6 +41,7 @@ builder.Services.AddApiRateLimiting(builder.Configuration);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IChallengeService, ChallengeService>();
 builder.Services.AddScoped<IMembershipService, MembershipService>();
+builder.Services.AddScoped<IProgressEntryService, ProgressEntryService>();
 builder.Services.AddScoped<DbSeeder>();
 
 const string frontendCorsPolicy = "Frontend";
@@ -80,6 +81,7 @@ app.UseRateLimiter();
 app.MapAuthEndpoints();
 app.MapChallengeEndpoints();
 app.MapMembershipEndpoints();
+app.MapProgressEntryEndpoints();
 
 // MAP ENDPOINTS - Routes for the API (Development only)
 if (app.Environment.IsDevelopment())
