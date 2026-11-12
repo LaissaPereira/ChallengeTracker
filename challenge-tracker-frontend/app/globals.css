@@ -27,14 +27,16 @@ body {
   font-family: var(--font-geist-sans), sans-serif;
 }
 
-a {
-  color: var(--accent);
-  text-underline-offset: 3px;
-  transition: color 150ms ease;
-}
+@layer base {
+  a {
+    color: var(--accent);
+    text-underline-offset: 3px;
+    transition: color 150ms ease;
+  }
 
-a:hover {
-  color: var(--accent-hover);
+  a:hover {
+    color: var(--accent-hover);
+  }
 }
 
 main > form {
@@ -53,8 +55,7 @@ main > form label {
   color: #34443d;
 }
 
-main > form input {
-  border-color: var(--border);
+main > form :is(input, textarea, select) {
   border-radius: 0.7rem;
   background: #fbfdfb;
   transition:
@@ -62,7 +63,7 @@ main > form input {
     box-shadow 150ms ease;
 }
 
-main > form input:focus {
+main > form :is(input, textarea, select):focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgb(22 116 92 / 13%);
 }
@@ -171,7 +172,7 @@ main > header form button:hover {
     color: #d3e1d7;
   }
 
-  main > form input {
+  main > form :is(input, textarea, select) {
     background: #141f19;
     color: var(--foreground);
   }
