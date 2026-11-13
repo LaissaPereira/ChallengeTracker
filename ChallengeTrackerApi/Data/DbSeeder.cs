@@ -33,7 +33,7 @@ public sealed class DbSeeder
 
         var owner = await FindOrCreateUserAsync(
             OwnerEmail,
-            "Demo Owner",
+            "Owner Demo",
             password,
             cancellationToken);
 
@@ -102,6 +102,12 @@ public sealed class DbSeeder
 
         if (user is not null)
         {
+            if (user.DisplayName != displayName)
+            {
+                user.DisplayName = displayName;
+                await _userManager.UpdateAsync(user);
+            }
+
             return user;
         }
 

@@ -53,7 +53,7 @@ export default function RegisterForm() {
                 onChange={setPassword}
             />
 
-            <button type="submit" disabled={pending} className="w-full rounded-md bg-blue-600 px-3 py-2 font-medium text-white hover:bg-blue-700 display:opacity-50">
+            <button type="submit" disabled={pending} className="w-full rounded-md bg-blue-600 px-3 py-2 font-medium text-white hover:bg-blue-700 disabled:opacity-50">
                 {pending ? "Creating account..." : "Register"}
             </button>
 
