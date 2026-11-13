@@ -11,14 +11,24 @@ namespace ChallengeTrackerApi.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            var sqlServer = ActiveProvider.Contains("SqlServer", StringComparison.Ordinal);
+            var guidType = sqlServer ? "uniqueidentifier" : "TEXT";
+            var stringType = sqlServer ? "nvarchar(max)" : "TEXT";
+            var string256Type = sqlServer ? "nvarchar(256)" : "TEXT";
+            var string450Type = sqlServer ? "nvarchar(450)" : "TEXT";
+            var string50Type = sqlServer ? "nvarchar(50)" : "TEXT";
+            var boolType = sqlServer ? "bit" : "INTEGER";
+            var dateTimeOffsetType = sqlServer ? "datetimeoffset" : "TEXT";
+            var intType = sqlServer ? "int" : "INTEGER";
+
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<Guid>(type: guidType, nullable: false),
+                    Name = table.Column<string>(type: string256Type, maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: string256Type, maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: stringType, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -29,22 +39,22 @@ namespace ChallengeTrackerApi.Data.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    DisplayName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
-                    UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
-                    PasswordHash = table.Column<string>(type: "TEXT", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "TEXT", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "TEXT", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "INTEGER", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "TEXT", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "INTEGER", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "INTEGER", nullable: false)
+                    Id = table.Column<Guid>(type: guidType, nullable: false),
+                    DisplayName = table.Column<string>(type: string50Type, maxLength: 50, nullable: false),
+                    UserName = table.Column<string>(type: string256Type, maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: string256Type, maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: string256Type, maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: string256Type, maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: boolType, nullable: false),
+                    PasswordHash = table.Column<string>(type: stringType, nullable: true),
+                    SecurityStamp = table.Column<string>(type: stringType, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: stringType, nullable: true),
+                    PhoneNumber = table.Column<string>(type: stringType, nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: boolType, nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: boolType, nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: dateTimeOffsetType, nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: boolType, nullable: false),
+                    AccessFailedCount = table.Column<int>(type: intType, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -55,11 +65,12 @@ namespace ChallengeTrackerApi.Data.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    RoleId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ClaimType = table.Column<string>(type: "TEXT", nullable: true),
-                    ClaimValue = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: intType, nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleId = table.Column<Guid>(type: guidType, nullable: false),
+                    ClaimType = table.Column<string>(type: stringType, nullable: true),
+                    ClaimValue = table.Column<string>(type: stringType, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -76,11 +87,12 @@ namespace ChallengeTrackerApi.Data.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ClaimType = table.Column<string>(type: "TEXT", nullable: true),
-                    ClaimValue = table.Column<string>(type: "TEXT", nullable: true)
+                    Id = table.Column<int>(type: intType, nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<Guid>(type: guidType, nullable: false),
+                    ClaimType = table.Column<string>(type: stringType, nullable: true),
+                    ClaimValue = table.Column<string>(type: stringType, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -97,10 +109,10 @@ namespace ChallengeTrackerApi.Data.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
-                    ProviderKey = table.Column<string>(type: "TEXT", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "TEXT", nullable: true),
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    LoginProvider = table.Column<string>(type: string450Type, nullable: false),
+                    ProviderKey = table.Column<string>(type: string450Type, nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: stringType, nullable: true),
+                    UserId = table.Column<Guid>(type: guidType, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -117,8 +129,8 @@ namespace ChallengeTrackerApi.Data.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    RoleId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    UserId = table.Column<Guid>(type: guidType, nullable: false),
+                    RoleId = table.Column<Guid>(type: guidType, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -141,10 +153,10 @@ namespace ChallengeTrackerApi.Data.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    LoginProvider = table.Column<string>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Value = table.Column<string>(type: "TEXT", nullable: true)
+                    UserId = table.Column<Guid>(type: guidType, nullable: false),
+                    LoginProvider = table.Column<string>(type: string450Type, nullable: false),
+                    Name = table.Column<string>(type: string450Type, nullable: false),
+                    Value = table.Column<string>(type: stringType, nullable: true)
                 },
                 constraints: table =>
                 {
