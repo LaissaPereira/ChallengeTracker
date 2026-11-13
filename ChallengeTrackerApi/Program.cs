@@ -6,6 +6,7 @@ using ChallengeTrackerApi.Errors;
 using ChallengeTrackerApi.Extensions;
 using ChallengeTrackerApi.Services.Interfaces;
 using ChallengeTrackerApi.Services.EF;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -40,6 +41,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     {
         options.UseSqlServer(connectionString, sqlServerOptions =>
             sqlServerOptions.EnableRetryOnFailure());
+        // The shared migrations contain provider-specific column types. EF compares the
+        // SQLite-authored snapshot with SQL Server conventions and reports a false positive.
+        options.ConfigureWarnings(warnings =>
+            warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
         return;
     }
 

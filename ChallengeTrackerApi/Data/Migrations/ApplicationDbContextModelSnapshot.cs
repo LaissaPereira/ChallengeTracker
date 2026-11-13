@@ -90,6 +90,7 @@ namespace ChallengeTrackerApi.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("ChallengeId")

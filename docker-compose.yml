@@ -24,6 +24,7 @@ services:
 
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-CU18-ubuntu-22.04
+    platform: linux/amd64
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: Developer
