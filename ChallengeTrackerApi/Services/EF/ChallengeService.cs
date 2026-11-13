@@ -21,9 +21,28 @@ public sealed class ChallengeService : IChallengeService
         Guid? currentUserId,
         ChallengeVisibility? visibility,
         ChallengeStatus? status,
+        bool joinedOnly,
         CancellationToken cancellationToken = default)
     {
         var query = _db.Challenges.AsNoTracking();
+
+        if (joinedOnly)
+        {
+            if (!currentUserId.HasValue)
+            {
+                throw new ArgumentException(
+                    "A current user is required when listing joined challenges.",
+                    nameof(currentUserId));
+            }
+
+            var userId = currentUserId.Value;
+            query = query.Where(challenge =>
+                challenge.OwnerId == userId ||
+                challenge.Memberships.Any(membership =>
+                    membership.UserId == userId &&
+                    (membership.Status == MembershipStatus.Active ||
+                     membership.Status == MembershipStatus.Pending)));
+        }
 
         if (visibility.HasValue)
         {

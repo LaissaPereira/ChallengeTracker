@@ -16,10 +16,17 @@ public static class ChallengeEndpoints
         group.MapGet("/", async (
             string? visibility,
             string? status,
+            string? scope,
             ClaimsPrincipal user,
             IChallengeService service,
             CancellationToken cancellationToken) =>
         {
+            var joinedOnly = ParseJoinedScope(scope);
+            if (joinedOnly && user.Identity?.IsAuthenticated != true)
+            {
+                return Results.Unauthorized();
+            }
+
             var currentUserId = user.Identity?.IsAuthenticated == true
                 ? user.GetUserId()
                 : (Guid?)null;
@@ -28,6 +35,7 @@ public static class ChallengeEndpoints
                 currentUserId,
                 ParseOptionalEnum<ChallengeVisibility>(visibility, nameof(visibility)),
                 ParseOptionalEnum<ChallengeStatus>(status, nameof(status)),
+                joinedOnly,
                 cancellationToken);
 
             return Results.Ok(challenges);
@@ -96,6 +104,21 @@ public static class ChallengeEndpoints
         })
         .RequireAuthorization()
         .WithSummary("Complete a challenge");
+    }
+
+    private static bool ParseJoinedScope(string? scope)
+    {
+        if (scope is null)
+        {
+            return false;
+        }
+
+        if (string.Equals(scope, "joined", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        throw new BadRequestException($"Invalid scope value '{scope}'.");
     }
 
     private static TEnum? ParseOptionalEnum<TEnum>(string? value, string parameterName)
