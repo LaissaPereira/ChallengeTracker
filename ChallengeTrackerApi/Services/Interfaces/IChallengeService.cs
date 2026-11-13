@@ -9,6 +9,7 @@ public interface IChallengeService
         Guid? currentUserId,
         ChallengeVisibility? visibility,
         ChallengeStatus? status,
+        bool joinedOnly,
         CancellationToken cancellationToken = default);
 
     Task<ChallengeDetailResponseDto> GetAsync(

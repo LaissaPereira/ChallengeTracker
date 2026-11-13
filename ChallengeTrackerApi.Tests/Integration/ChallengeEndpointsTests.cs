@@ -122,6 +122,60 @@ public sealed class ChallengeEndpointsTests : IClassFixture<AuthApiFactory>
     }
 
     [Fact]
+    public async Task List_JoinedScopeWithoutToken_ReturnsUnauthorizedProblemDetails()
+    {
+        using var client = _factory.CreateClient();
+
+        var response = await client.GetAsync("/challenges?scope=joined");
+
+        await AssertProblemAsync(response, HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task List_InvalidScope_ReturnsBadRequestProblemDetails()
+    {
+        using var client = _factory.CreateClient();
+
+        var response = await client.GetAsync("/challenges?scope=unknown");
+
+        await AssertProblemAsync(response, HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task List_JoinedScope_ReturnsOwnedActiveAndPendingChallengesOnly()
+    {
+        var (viewerClient, _) = await CreateAuthenticatedClientAsync("Dashboard viewer");
+        var (ownerClient, _) = await CreateAuthenticatedClientAsync("Challenge owner");
+        using (viewerClient)
+        using (ownerClient)
+        {
+            var ownedChallengeId = await CreateChallengeAsync(viewerClient);
+            var activeChallengeId = await CreateChallengeAsync(ownerClient, "public");
+            var pendingChallengeId = await CreateChallengeAsync(ownerClient, "private");
+            var unrelatedChallengeId = await CreateChallengeAsync(ownerClient, "public");
+
+            await viewerClient.PostAsJsonAsync(
+                "/memberships",
+                new { challengeId = activeChallengeId });
+            await viewerClient.PostAsJsonAsync(
+                "/memberships",
+                new { challengeId = pendingChallengeId });
+
+            var response = await viewerClient.GetAsync("/challenges?scope=joined");
+            var body = await ReadJsonAsync(response);
+            var challengeIds = body.EnumerateArray()
+                .Select(challenge => challenge.GetProperty("id").GetGuid())
+                .ToList();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains(ownedChallengeId, challengeIds);
+            Assert.Contains(activeChallengeId, challengeIds);
+            Assert.Contains(pendingChallengeId, challengeIds);
+            Assert.DoesNotContain(unrelatedChallengeId, challengeIds);
+        }
+    }
+
+    [Fact]
     public async Task StartAndComplete_AsOwner_ReturnUpdatedChallenge()
     {
         var (client, _) = await CreateAuthenticatedClientAsync("Owner");
@@ -194,11 +248,13 @@ public sealed class ChallengeEndpointsTests : IClassFixture<AuthApiFactory>
         return (client, registeredUser.GetProperty("id").GetGuid());
     }
 
-    private static async Task<Guid> CreateChallengeAsync(HttpClient client)
+    private static async Task<Guid> CreateChallengeAsync(
+        HttpClient client,
+        string visibility = "public")
     {
         var response = await client.PostAsJsonAsync(
             "/challenges",
-            ValidChallengeRequest($"Challenge-{Guid.NewGuid():N}"));
+            ValidChallengeRequest($"Challenge-{Guid.NewGuid():N}", visibility));
         var body = await ReadJsonAsync(response);
 
         return body.GetProperty("id").GetGuid();
