@@ -6,6 +6,7 @@ using ChallengeTrackerApi.Errors;
 using ChallengeTrackerApi.Extensions;
 using ChallengeTrackerApi.Services.Interfaces;
 using ChallengeTrackerApi.Services.EF;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -26,9 +27,30 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // DATABASE
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Missing default connection string");
+var databaseProvider = builder.Configuration["Database:Provider"] ?? "Sqlite";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+{
+    if (string.Equals(databaseProvider, "Sqlite", StringComparison.OrdinalIgnoreCase))
+    {
+        options.UseSqlite(connectionString);
+        return;
+    }
+
+    if (string.Equals(databaseProvider, "SqlServer", StringComparison.OrdinalIgnoreCase))
+    {
+        options.UseSqlServer(connectionString, sqlServerOptions =>
+            sqlServerOptions.EnableRetryOnFailure());
+        // The shared migrations contain provider-specific column types. EF compares the
+        // SQLite-authored snapshot with SQL Server conventions and reports a false positive.
+        options.ConfigureWarnings(warnings =>
+            warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+        return;
+    }
+
+    throw new InvalidOperationException(
+        $"Unsupported database provider '{databaseProvider}'. Use 'Sqlite' or 'SqlServer'.");
+});
 
 // IDENTITY + JWT
 builder.Services.AddIdentityServices();
@@ -86,16 +108,30 @@ app.MapProgressEntryEndpoints();
 app.MapLeaderboardEndpoints();
 
 // MAP ENDPOINTS - Routes for the API (Development only)
-if (app.Environment.IsDevelopment())
+var applyMigrations = app.Environment.IsDevelopment() ||
+    builder.Configuration.GetValue<bool>("Database:ApplyMigrations");
+var seedData = app.Environment.IsDevelopment() ||
+    builder.Configuration.GetValue<bool>("SeedData:Enabled");
+
+if (applyMigrations || seedData)
 {
     await using var scope = app.Services.CreateAsyncScope();
 
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await db.Database.MigrateAsync();
+    if (applyMigrations)
+    {
+        await db.Database.MigrateAsync();
+    }
 
-    var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
-    await seeder.SeedAsync();
+    if (seedData)
+    {
+        var seeder = scope.ServiceProvider.GetRequiredService<DbSeeder>();
+        await seeder.SeedAsync();
+    }
+}
 
+if (app.Environment.IsDevelopment())
+{
     app.MapOpenApi();
     app.MapScalarApiReference();
 

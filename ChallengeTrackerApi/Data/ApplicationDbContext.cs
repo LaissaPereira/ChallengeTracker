@@ -46,6 +46,10 @@ public class ApplicationDbContext : IdentityDbContext<User, IdentityRole<Guid>, 
             .IsUnique();
 
         builder.Entity<ProgressEntry>()
+            .Property(progressEntry => progressEntry.Amount)
+            .HasPrecision(18, 2);
+
+        builder.Entity<ProgressEntry>()
             .HasOne(progressEntry => progressEntry.User)
             .WithMany(user => user.ProgressEntries)
             .HasForeignKey(progressEntry => progressEntry.UserId)

@@ -82,6 +82,35 @@ public sealed class LeaderboardServiceTests
             database.Service.GetByChallengeAsync(Guid.NewGuid(), "total"));
     }
 
+    [Fact]
+    public async Task GetByChallengeAsync_ChallengeWithoutParticipants_ReturnsEmptyLeaderboard()
+    {
+        await using var database = await LeaderboardServiceTestDatabase.CreateAsync();
+
+        var result = await database.Service.GetByChallengeAsync(
+            database.ChallengeId,
+            "total");
+
+        Assert.Empty(result);
+    }
+
+    [Fact]
+    public async Task GetByChallengeAsync_ProgressForAnotherChallenge_IsNotIncludedInTotal()
+    {
+        await using var database = await LeaderboardServiceTestDatabase.CreateAsync();
+        var participant = await database.AddParticipantAsync("Participant", MembershipStatus.Active);
+        var otherChallengeId = await database.AddChallengeAsync("Other challenge");
+        await database.AddProgressAsync(participant.Id, database.ChallengeId, 12m);
+        await database.AddProgressAsync(participant.Id, otherChallengeId, 100m);
+
+        var result = await database.Service.GetByChallengeAsync(
+            database.ChallengeId,
+            "total");
+
+        var entry = Assert.Single(result);
+        Assert.Equal(12m, entry.TotalProgress);
+    }
+
     private sealed class LeaderboardServiceTestDatabase : IAsyncDisposable
     {
         private readonly SqliteConnection _connection;
@@ -155,6 +184,14 @@ public sealed class LeaderboardServiceTests
 
         public async Task AddProgressAsync(Guid userId, params decimal[] amounts)
         {
+            await AddProgressAsync(userId, ChallengeId, amounts);
+        }
+
+        public async Task AddProgressAsync(
+            Guid userId,
+            Guid challengeId,
+            params decimal[] amounts)
+        {
             foreach (var amount in amounts)
             {
                 var loggedDate = new DateOnly(2026, 1, _loggedDay++);
@@ -162,7 +199,7 @@ public sealed class LeaderboardServiceTests
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
-                    ChallengeId = ChallengeId,
+                    ChallengeId = challengeId,
                     Amount = amount,
                     LoggedAt = new DateTimeOffset(
                         loggedDate.ToDateTime(TimeOnly.MinValue),
@@ -173,6 +210,25 @@ public sealed class LeaderboardServiceTests
             }
 
             await Db.SaveChangesAsync();
+        }
+
+        public async Task<Guid> AddChallengeAsync(string title)
+        {
+            var challenge = new Challenge
+            {
+                Id = Guid.NewGuid(),
+                OwnerId = await Db.Users.Select(user => user.Id).FirstAsync(),
+                Title = title,
+                Visibility = ChallengeVisibility.Public,
+                Status = ChallengeStatus.Running,
+                StartDate = new DateOnly(2026, 1, 1),
+                EndDate = new DateOnly(2026, 1, 31),
+                CreatedAt = DateTimeOffset.UtcNow
+            };
+
+            Db.Challenges.Add(challenge);
+            await Db.SaveChangesAsync();
+            return challenge.Id;
         }
 
         public async ValueTask DisposeAsync()

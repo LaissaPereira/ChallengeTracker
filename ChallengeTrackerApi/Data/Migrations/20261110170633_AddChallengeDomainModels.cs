@@ -11,19 +11,27 @@ namespace ChallengeTrackerApi.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            var sqlServer = ActiveProvider.Contains("SqlServer", StringComparison.Ordinal);
+            var guidType = sqlServer ? "uniqueidentifier" : "TEXT";
+            var stringType = sqlServer ? "nvarchar(max)" : "TEXT";
+            var intType = sqlServer ? "int" : "INTEGER";
+            var dateType = sqlServer ? "date" : "TEXT";
+            var dateTimeOffsetType = sqlServer ? "datetimeoffset" : "TEXT";
+            var decimalType = sqlServer ? "decimal(18,2)" : "TEXT";
+
             migrationBuilder.CreateTable(
                 name: "Challenges",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    OwnerId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Title = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: true),
-                    Visibility = table.Column<int>(type: "INTEGER", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    StartDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    EndDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: guidType, nullable: false),
+                    OwnerId = table.Column<Guid>(type: guidType, nullable: false),
+                    Title = table.Column<string>(type: stringType, nullable: false),
+                    Description = table.Column<string>(type: stringType, nullable: true),
+                    Visibility = table.Column<int>(type: intType, nullable: false),
+                    Status = table.Column<int>(type: intType, nullable: false),
+                    StartDate = table.Column<DateOnly>(type: dateType, nullable: false),
+                    EndDate = table.Column<DateOnly>(type: dateType, nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: dateTimeOffsetType, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -40,11 +48,11 @@ namespace ChallengeTrackerApi.Data.Migrations
                 name: "Memberships",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ChallengeId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    JoinedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: guidType, nullable: false),
+                    UserId = table.Column<Guid>(type: guidType, nullable: false),
+                    ChallengeId = table.Column<Guid>(type: guidType, nullable: false),
+                    Status = table.Column<int>(type: intType, nullable: false),
+                    JoinedAt = table.Column<DateTimeOffset>(type: dateTimeOffsetType, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -67,14 +75,14 @@ namespace ChallengeTrackerApi.Data.Migrations
                 name: "ProgressEntries",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    UserId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ChallengeId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Amount = table.Column<decimal>(type: "TEXT", nullable: false),
-                    Note = table.Column<string>(type: "TEXT", nullable: true),
-                    LoggedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    LoggedDate = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: guidType, nullable: false),
+                    UserId = table.Column<Guid>(type: guidType, nullable: false),
+                    ChallengeId = table.Column<Guid>(type: guidType, nullable: false),
+                    Amount = table.Column<decimal>(type: decimalType, nullable: false),
+                    Note = table.Column<string>(type: stringType, nullable: true),
+                    LoggedAt = table.Column<DateTimeOffset>(type: dateTimeOffsetType, nullable: false),
+                    LoggedDate = table.Column<DateOnly>(type: dateType, nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: dateTimeOffsetType, nullable: false)
                 },
                 constraints: table =>
                 {
