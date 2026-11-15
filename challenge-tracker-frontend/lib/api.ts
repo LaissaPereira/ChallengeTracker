@@ -137,6 +137,14 @@ export type ProgressEntry = {
 };
 
 
+export type LeaderboardEntry = {
+    rank: number;
+    userId: string;
+    displayName: string;
+    totalProgress: number;
+};
+
+
 async function authGet<T>(path: string): Promise<T> {
     const token = await getToken();
     if(!token) throw new ApiError("Not authenticated", 401);
@@ -161,6 +169,8 @@ export const getMe = () => authGet<User>("/auth/me");
 export const getChallenges = () => authGet<ChallengeListItem[]>("/challenges");
 
 export const getChallenge = (id: string) => authGet<ChallengeDetail>(`/challenges/${id}`);
+
+export const getLeaderboard = (challengeId: string) => authGet<LeaderboardEntry[]>(`/leaderboards/challenges/${challengeId}`);
 
 export const createChallenge = (data: NewChallenge) => authSend<ChallengeDetail>("/challenges", "POST", data);
 
