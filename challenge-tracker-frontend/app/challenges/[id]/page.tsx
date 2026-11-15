@@ -1,8 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ApiError, getChallenge, getMe } from "../../../lib/api";
+import { ApiError, getChallenge, getLeaderboard, getMe } from "../../../lib/api";
 import ActionButton from "../../../components/ActionButton";
+import Leaderboard from "../../../components/Leaderboard";
 import ProgressForm from "../../../components/ProgressForm";
 import { statusStyle } from "../../../components/ChallengeCard";
 import {
@@ -23,9 +24,9 @@ export default function ChallengePage({ params }: PageProps<"/challenges/[id]">)
 
 async function ChallengeContent({ params }: { params: PageProps<"/challenges/[id]">["params"] }) {
     const { id } = await params;
-    let challenge, me;
+    let challenge, me, leaderboard;
     try {
-        [challenge, me] = await Promise.all([getChallenge(id), getMe()]);
+        [challenge, me, leaderboard] = await Promise.all([getChallenge(id), getMe(), getLeaderboard(id)]);
     } catch (error) {
         if (error instanceof ApiError) {
             if (error.status === 401) redirect("/logout");
@@ -84,6 +85,11 @@ async function ChallengeContent({ params }: { params: PageProps<"/challenges/[id
                     )}
                 </section>
             )}
+
+            <section>
+                <h2 className="mb-3 text-lg font-semibold">Leaderboard</h2>
+                <Leaderboard entries={leaderboard} currentUserId={me.id} />
+            </section>
 
             <section>
                 <h2 className="mb-3 text-lg font-semibold">Members</h2>
